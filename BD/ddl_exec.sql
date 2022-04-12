@@ -19,7 +19,7 @@ create table  if not exists tb_Auth(
 
 drop table tb_Auth
 select * from tb_Auth 
-insert into tb_Auth (Login, Password, Email) values ('hllm',md5('123'),'hugomesquitaweb2@gmail.com');
+insert into tb_Auth (Login, Password, Email) values ('hllm',md5('123'),'yyy@gmail.com');
 
 drop table tb_LogAuth 
 create table if not exists tb_LogAuth(
@@ -39,7 +39,7 @@ create table if not exists tb_LogAuth(
 create table if not exists tb_Url(
 	IdUrl bigint not null auto_increment,
 	IdAuth bigint not null,
-	Url varchar(150) not null,
+	Url varchar(250) not null,
 	IpTerminal varchar(25) not null,
 	DtHrRegister datetime not null default now(),
 	primary key(IdUrl),
@@ -51,7 +51,7 @@ create table if not exists tb_Url(
 drop table tb_Url 
 select * from tb_Url
 insert into tb_Url (IdAuth, Url, IpTerminal) 
-values (1, 'http://www.hugomesquita.com.br', '127.0.0.1');
+values (2, 'http://www.google.com.br', '127.0.0.1');
 
 
 drop table tb_Monitoring 
@@ -105,10 +105,9 @@ select a.IdAuth, u.Url, m.StatusCode, m.Body, max(m.DtHrMonitoring) as DtHrMonit
 join tb_Url u on u.IdAuth = a.IdAuth 
 left join tb_LogMonitoring m on m.IdUrl = u.IdUrl and m.IdAuth = a.IdAuth 
 where 
-((1 = 1) and (a.IdAuth = 1))
+((1 = 0) and (a.IdAuth = 1))
 or 
-((0 = 1))
-
+((0 = 0))
 group by a.IdAuth, u.Url, m.StatusCode
 
 
@@ -276,7 +275,7 @@ end;
 
 end//
 
-select fn_email('xxx@gmail.com') as result;
+select fn_email('zzz@gmail.com') as result;
 
 
 

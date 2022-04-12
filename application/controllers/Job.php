@@ -9,14 +9,25 @@ class Job extends CI_Controller {
         $this->load->model('M_Job','job');
         
         //libs
-        //$this->load->library(array('session'));
+        $this->load->library(array('session','job_lib'));
         $this->load->helper(array('url', 'directory'));
     }
 
 	public function index(){    
-        $execute = $this->job->exec_job();
-        print_r($execute);
-	}
+        //$execute = $this->job->exec_job();
+        //print_r($execute);
+
+
+        //atividades
+        $job = new Job_lib();
+        $job->url = "https://www.globo.com/";
+	    echo $job->process_execute();
+
+
+
+
+
+    }
 
 
 
