@@ -6,7 +6,7 @@ class Login extends CI_Controller {
 	public function index()
 	{
         $data = array(
-            'titulo' => 'Login'
+            'titulo' => 'XPTO - Login'
         );
         
 		$this->load->view('login/index', $data);

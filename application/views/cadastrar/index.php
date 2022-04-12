@@ -18,7 +18,7 @@
                 </div>
 
                 <div class="input-field">
-                   <input type="text" name="email" id="email" autocomplete="off" pattern=".+" required="" />
+                   <input type="text" name="email" id="email" autocomplete="off" pattern=".+" required="" onChange="isEmail(this.value)"/>
                    <label for="email">E-Mail</label>
                 </div>
 
@@ -42,3 +42,31 @@
 
 
 <script src="<?= base_url('assets/js/jquery.min.js'); ?>"></script>
+<script>
+    function isEmail(p_email){
+        $.ajax({
+            url: "<?= base_url('cadastrar/isEmail/') ?>",
+            type: "POST",
+            dataType: "JSON",
+            data: {
+                email: p_email
+            },
+            success: (data) => {
+                if(data[0].valor == 0){              
+                    // email não existe     
+                    $("#email").removeClass('exist');
+                    $("#email").addClass('no-exist');
+                }else if(data[0].valor == 1){
+                    // email já existe
+                    $("#email").addClass('exist');
+                    $("#email").removeClass('no-exist');
+                   
+                }
+
+            }
+
+        });
+
+    }
+
+</script>

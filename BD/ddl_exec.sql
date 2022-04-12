@@ -124,3 +124,120 @@ begin
 		insert into tb_Monitoring () values ();
 	end if;
 end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+use xpto;
+drop procedure sp_auth
+delimiter //
+/*Stored Procedure*/
+create procedure  if not exists sp_auth(
+	p_operacao int,
+	p_login varchar(50),
+	p_password varchar(50),
+	p_email varchar(100)
+) 
+begin
+	/*
+	 * 0 = verifica se existe email, caso não exista, efetua o cadastro
+	 * */
+	
+	 case p_operacao
+		 when 0 then
+			if (select fn_email(p_email)) = 1 then 
+				select 1 valor;  -- "E-Mail Já Cadastrado!"
+			else
+		 		select 0 valor;  -- "E-Mail Não Cadastrado!" 
+		 	end if;
+			
+
+		when 1 then
+			select "teste1" mensagem;
+		when 2 then 
+			select "teste2" mensagem;
+	end case;
+end;
+
+end//
+
+call sp_auth(0,'teste', '1112', 'jack2@gmail.com') 
+
+
+/*else
+		 		insert into tb_Auth (Login, Password, Email) values (p_login, p_password, p_email);
+		 		select "E-Mail Cadastrado com Sucesso!" mensagem;*/
+
+
+/* função que verifica se já existe o email*/
+drop function fn_email
+delimiter //
+create function fn_email(
+	p_email varchar(100)
+)
+returns varchar(100)
+
+begin
+	declare final int default 0;
+	declare v_result int;
+	declare v_email varchar(100);
+	
+
+	declare cursor_acesso cursor for 
+		select Email from tb_Auth where Email = p_email;
+			
+		declare continue handler for not found set final = 1;
+				
+	 	open cursor_acesso;
+	 		fetch cursor_acesso into v_email;
+	 		if not final then 
+	 		 	set v_result = 1; -- 'E-Mail Já Existe!';
+	 		else
+	 			set v_result = 0; -- 'E-Mail Não Existe!';
+	 		end if;
+	 
+	 	close cursor_acesso;
+	return (v_result);
+end;
+
+end//
+
+select fn_email('xxx@gmail.com');
+
+
+
+
+
+
+
+
+
+
+			-- if exists (select var_email) then 
+			-- 	select "E-Mail Já Cadastrado!" mensagem;
+			-- else 
+				-- insert into tb_Auth (Login, Password, Email) values (p_login, p_password, p_email);
+				-- select "E-Mail Cadastrado com Sucesso!" mensagem;
+			-- end if;

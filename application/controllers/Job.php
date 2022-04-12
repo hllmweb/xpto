@@ -13,11 +13,13 @@ class Job extends CI_Controller {
         $this->load->helper(array('url', 'directory'));
     }
 
-
-	public function index(){
-    
-        
+	public function index(){    
         $execute = $this->job->exec_job();
         print_r($execute);
 	}
+
+
+
 }
+
+?>
