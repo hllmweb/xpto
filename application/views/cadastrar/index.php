@@ -60,7 +60,8 @@
                     // email já existe
                     $("#email").addClass('exist');
                     $("#email").removeClass('no-exist');
-                   
+                    alert("E-Mail já foi cadastrado!");
+                    $("#email").focus();
                 }
 
             }
