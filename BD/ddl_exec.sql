@@ -67,7 +67,7 @@ begin
 	where IdUrl = new.IdUrl and IdAuth = new.IdAuth;
 end;
 
-call sp_auth(1, 'yyy','123',null)
+call sp_auth(1, 'yyy','23',null)
 drop procedure sp_auth 
 
 delimiter //
