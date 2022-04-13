@@ -55,6 +55,7 @@ html, body{
     display: block;
     padding: 5px 0;
     position: relative;
+    overflow: hidden;
 }
 .description span a{
     color:#0B0D36;

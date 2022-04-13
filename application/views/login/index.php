@@ -11,7 +11,7 @@
 <body>
     <div class="row">
         <div class="login-container">
-            <form method="POST" action="#">
+            <form method="POST" action="<?= base_url('auth/isLogin/'); ?>">
                 <div class="input-field">
                     <input type="text" name="login" id="login" autocomplete="off" pattern=".+" required="" />
                     <label for="login">Login</label>
@@ -38,16 +38,5 @@
 
 <script src="<?= base_url('assets/js/jquery.min.js'); ?>"></script>
 <script>
-   $(function(){
-
-    // let cont = 0;
-    // setInterval(function () {
-
-    //     $("#load").html("texte"+cont);
-
-    //     cont++;
-    // }, 1000);
-
-
-});
+   
 </script>

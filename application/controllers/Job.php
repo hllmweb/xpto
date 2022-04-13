@@ -13,26 +13,6 @@ class Job extends CI_Controller {
         $this->load->helper(array('url', 'directory'));
     }
 
-    public function index(){
-        // $idauth = 2;
-        // $params_list_all_url = array(
-        //     'p_operacao'    => 0,
-        //     'p_opcao'       => 1,
-        //     'p_idauth'      => $idauth,
-        //     'p_idurl'       => null,
-        //     'p_statuscode'  => null,
-        //     'p_body'        => null,
-        //     'p_ipterminal'  => null
-        // );
-
-        // $list_url = $this->job->sp_monitoring($params_list_all_url);        
-        
-        // $data = array(
-        //     'list_url' => $list_url
-        // );
-
-        // $this->load->view('');
-    }
 
 	public function run(){  
         $params_list_all_url = array(

@@ -9,12 +9,27 @@ class Auth extends CI_Controller {
         $this->load->model('M_Auth','auth');
         
         //libs
-        //$this->load->library(array('session'));
+        $this->load->library(array('session'));
         $this->load->helper(array('url', 'directory'));
     }
 
 
-	public function index(){
-    
+	public function isLogin(){
+        $login      = $this->input->post('login');
+        $password   = $this->input->post('senha');
+
+        $params = array(
+            'p_operacao'    => 1,
+            'p_login'       => $login,
+            'p_password'    => $password,
+            'p_email'       => null
+        );
+
+        $islogin = $this->auth->sp_auth($params);
+
+        print_r($islogin);
+        
+        
+
 	}
 }

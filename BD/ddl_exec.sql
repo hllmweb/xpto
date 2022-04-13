@@ -67,8 +67,8 @@ begin
 	where IdUrl = new.IdUrl and IdAuth = new.IdAuth;
 end;
 
-call sp_auth(1, 'xxx','123',null)
-
+call sp_auth(1, 'yyy','123',null)
+drop procedure sp_auth 
 
 delimiter //
 /*Stored Procedure*/
@@ -96,11 +96,10 @@ begin
 		when 1 then
 		
 			if not exists (select 1 from tb_Auth a where a.Login = p_login and a.Password  = md5(p_password)) then 
-				select 'Usuário ou Senha invalido!' mensagem;
+				select 0 valor; -- "Usuário ou Senha invalido!"
 			else 
 				select a.IdAuth, a.Login, a.Password, a.Email, a.DtHrRegister 
-				from tb_Auth a where (a.Login = p_login or a.Email = p_email) 
-				and a.Password  = md5(p_password);
+				from tb_Auth a where a.Login = p_login and a.Password  = md5(p_password);
 			end if;
 			
 		when 2 then 

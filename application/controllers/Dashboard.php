@@ -14,25 +14,10 @@ class Dashboard extends CI_Controller {
     }
 
 
-	public function index(){
-		// $idauth = 2;
-	
-  //       $params_list_all_url = array(
-  //           'p_operacao'    => 0,
-  //           'p_opcao'       => 1,
-  //           'p_idauth'      => $idauth,
-  //           'p_idurl'       => null,
-  //           'p_url'         => null,
-  //           'p_statuscode'  => null,
-  //           'p_body'        => null,
-  //           'p_ipterminal'  => null
-  //       );
-
-        //$list_url = $this->job->sp_monitoring($params_list_all_url);        
+	public function index(){    
       
 		$data = array(
-			'titulo' 	=> 'XPTO - Dashboard',
-		//	'list_urls' => $list_url
+			'titulo' 	=> 'XPTO - Dashboard'
 		);
 		
 		$this->load->view('dashboard/index',$data);
