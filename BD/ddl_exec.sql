@@ -1,9 +1,10 @@
 create database xpto;
-
 use xpto;
 
+drop table tb_Auth
+
 /*
- * Usu√°rios autenticados
+ * Usu·rios autenticados
  * */
 create table  if not exists tb_Auth(
 	IdAuth bigint not null auto_increment,
@@ -15,11 +16,10 @@ create table  if not exists tb_Auth(
 	primary key(IdAuth)
 );
 
--- criar uma tabela de logs de acesso 
-
-drop table tb_Auth
 select * from tb_Auth 
-insert into tb_Auth (Login, Password, Email) values ('hllm',md5('123'),'xxx@gmail.com');
+insert into tb_Auth (Login, Password, Email) values 
+('xxx',md5('123'),'xxx@gmail.com'),
+('yyy',md5('123'),'yyy@gmail.com');
 
 
 /*
@@ -37,17 +37,10 @@ create table if not exists tb_Url(
 	foreign key(IdAuth) references tb_Auth(IdAuth)
 );
 
--- fazer a checagem da url cadastrada
-drop table tb_Url 
 
 insert into tb_Url (IdAuth, Url, IpTerminal) 
 values (2, 'https://www.globo.com', '127.0.0.1');
-select * from tb_Url
-select * from tb_logmonitoring tl 
 
-delete from tb_url where IdUrl = 3
-
-drop table tb_LogMonitoring 
 create table if not exists tb_LogMonitoring(
 	IdMonitoring bigint not null auto_increment,
 	IdUrl bigint not null,
@@ -63,9 +56,6 @@ create table if not exists tb_LogMonitoring(
 	foreign key(IdAuth) references tb_Auth(IdAuth) on delete cascade on update cascade
 );
 
-select * from tb_url tu  
-select * from tb_LogMonitoring 
-
 
 /*importante para atualizar o status*/
 drop trigger tg_after_insert
@@ -73,11 +63,148 @@ create or replace trigger tg_after_insert
 after insert on tb_LogMonitoring
 for each row 
 begin
-	
 	update tb_Url set StatusCode = new.StatusCode
 	where IdUrl = new.IdUrl and IdAuth = new.IdAuth;
- 
 end;
+
+call sp_auth(1, 'xxx','123',null)
+
+
+delimiter //
+/*Stored Procedure*/
+create procedure  if not exists sp_auth(
+	p_operacao int,
+	p_login varchar(50),
+	p_password varchar(50),
+	p_email varchar(100)
+) 
+begin
+	/*	
+	 * 
+	 * p_operacao = 0 (verifica se existe email, caso n„o exista, efetua o cadastro)
+	 * p_operacao = 1 (verifica se existe usu·rio)
+	 * p_operacao = 2 (inserir usu·rios)
+	 * */
+	
+	 case p_operacao
+		 when 0 then
+			if (select fn_email(p_email)) = 1 then 
+				select 1 valor;  -- "E-Mail J· Cadastrado!"
+			else
+		 		select 0 valor;  -- "E-Mail N„o Cadastrado!" 
+		 	end if;
+		when 1 then
+		
+			if not exists (select 1 from tb_Auth a where a.Login = p_login and a.Password  = md5(p_password)) then 
+				select 'Usu·rio ou Senha invalido!' mensagem;
+			else 
+				select a.IdAuth, a.Login, a.Password, a.Email, a.DtHrRegister 
+				from tb_Auth a where (a.Login = p_login or a.Email = p_email) 
+				and a.Password  = md5(p_password);
+			end if;
+			
+		when 2 then 
+				insert into tb_Auth (Login, Password, Email) values (p_login, md5(p_password), p_email);
+				select 'Cadastrado com sucesso!' mensagem;
+	end case;
+end;
+
+
+/* realizar o insert do monitoramento*/
+create procedure if not exists sp_monitoring(
+	p_operacao int,
+	p_opcao int,
+	p_idauth bigint,
+	p_idurl bigint,
+	p_url varchar(250),
+	p_statuscode smallint, 
+	p_body longtext,
+	p_ipterminal varchar(25)
+)
+begin
+	/* p_opcao = 1 (lista apenas urls do id)
+	 * p_opcao = 0 (lista todas as urls)
+	 * 
+	 * 
+	 * p_operacao = 0 (lista urls em monitoramento por usu·rios)
+	 * p_operacao = 1 (insere o status code e body de cada requisiÁıes)
+	 * p_operacao = 2 (delete url e o log de monitoramento)
+	 * p_operacao = 3 (insere url)
+	 * */
+	case p_operacao
+		when 0 then
+			select a.IdAuth, u.IdUrl, u.Url, u.StatusCode,
+			m.Body, max(m.DtHrMonitoring) as DtHrMonitoring from tb_Auth a 
+			join tb_Url u on u.IdAuth = a.IdAuth 
+			left join tb_LogMonitoring m on m.IdUrl = u.IdUrl and m.IdAuth = a.IdAuth 
+			where 
+			((1 = p_opcao) and (a.IdAuth = p_idauth))
+			or 
+			((0 = p_opcao))
+			group by a.IdAuth, u.StatusCode, u.IdUrl, u.Url;
+	
+		when 1 then
+			insert into tb_LogMonitoring (idUrl, IdAuth, StatusCode, Body, IpTerminal) 
+		 	values (p_idurl, p_idauth, p_statuscode, p_body, p_ipterminal);
+		 	select 1 valor;
+		when 2 then
+		 	delete from tb_Url where IdAuth = p_idauth and IdUrl = p_idurl; 
+		 	select 1 valor;
+		when 3 then 
+			insert into tb_Url (IdAuth, Url, IpTerminal) 
+			values (p_idauth, p_url, p_ipterminal);
+			select 1 valor;
+	end case;
+end;
+
+end//
+
+
+
+
+/* funÁ„o que verifica se j· existe o email*/
+
+delimiter //
+create function fn_email(
+	p_email varchar(100)
+)
+returns varchar(100)
+
+begin
+	declare final int default 0;
+	declare v_result int;
+	declare v_email varchar(100);
+	
+
+	declare cursor_acesso cursor for 
+		select Email from tb_Auth where Email = p_email;
+			
+		declare continue handler for not found set final = 1;
+				
+	 	open cursor_acesso;
+	 		fetch cursor_acesso into v_email;
+	 		if not final then 
+	 		 	set v_result = 1; -- 'E-Mail J√° Existe!';
+	 		else
+	 			set v_result = 0; -- 'E-Mail N√£o Existe!';
+	 		end if;
+	 
+	 	close cursor_acesso;
+	return (v_result);
+end;
+
+end//
+
+select fn_email('zzz@gmail.com') as result;
+
+
+
+
+
+
+
+
+
 
 
 
@@ -176,87 +303,13 @@ drop procedure sp_auth
 drop procedure sp_monitoring 
 drop function fn_email
 
-delimiter //
-/*Stored Procedure*/
-create procedure  if not exists sp_auth(
-	p_operacao int,
-	p_login varchar(50),
-	p_password varchar(50),
-	p_email varchar(100)
-) 
-begin
-	/*	
-	 * 
-	 * 0 = verifica se existe email, caso n√£o exista, efetua o cadastro
-	 * */
-	
-	 case p_operacao
-		 when 0 then
-			if (select fn_email(p_email)) = 1 then 
-				select 1 valor;  -- "E-Mail J√° Cadastrado!"
-			else
-		 		select 0 valor;  -- "E-Mail N√£o Cadastrado!" 
-		 	end if;
-			
-
-		when 1 then
-			select "teste1" mensagem;
-		when 2 then 
-			select "teste2" mensagem;
-	end case;
-end;
-
-end//
 
 call sp_auth(0,'teste', '1112', 'jack@gmail.com') 
 
 
 drop procedure sp_monitoring
 
-/* realizar o insert do monitoramento*/
-create procedure if not exists sp_monitoring(
-	p_operacao int,
-	p_opcao int,
-	p_idauth bigint,
-	p_idurl bigint,
-	p_url varchar(250),
-	p_statuscode smallint, 
-	p_body longtext,
-	p_ipterminal varchar(25)
-)
-begin
-	/* p_opcao = 1 (lista apenas urls do id)
-	 * p_opcao = 0 (lista todas as urls)
-	 * 
-	 * p_operacao = 0 (lista urls em monitoramento por usu√°rios)
-	 * p_operacao = 1 (insere o status code e body de cada requisi√ß√£o)
-	 * p_operacao = 2 (delete urls e o log de monitoramento)
-	 * */
-	case p_operacao
-		when 0 then
-			select a.IdAuth, u.IdUrl, u.Url, u.StatusCode,
-			m.Body, max(m.DtHrMonitoring) as DtHrMonitoring  from tb_Auth a 
-			join tb_Url u on u.IdAuth = a.IdAuth 
-			left join tb_LogMonitoring m on m.IdUrl = u.IdUrl and m.IdAuth = a.IdAuth 
-			where 
-			((1 = p_opcao) and (a.IdAuth = p_idauth))
-			or 
-			((0 = p_opcao))
-			group by a.IdAuth, u.StatusCode, u.IdUrl, u.Url;
-	
-		when 1 then
-			insert into tb_LogMonitoring (idUrl, IdAuth, StatusCode, Body, IpTerminal) 
-		 	values (p_idurl, p_idauth, p_statuscode, p_body, p_ipterminal);
-		 	select 1 valor;
-		when 2 then
-		 	delete from tb_Url where IdAuth = p_idauth and IdUrl = p_idurl; 
-		 	select 1 valor;
-		when 3 then 
-			insert into tb_Url (IdAuth, Url, IpTerminal) 
-			values (p_idauth, p_url, p_ipterminal);
-			select 1 valor;
-	end case;
-end;
+
 
 
 
@@ -268,47 +321,12 @@ call sp_monitoring(0,1,2,null,null,null,null);
 call sp_monitoring(0,0,null,null,null,null,null);
 call sp_monitoring(1,null,1,1,200,'dashudashu','127.0.0.1');
 call sp_monitoring(2,null,7,null,null,null,null);
-call sp_monitoring(3,null,2,null,'http://www.google.com',null,null,'127.0.0.1');
+call sp_monitoring(3,null,2,null,'http://www.techmonteiro.com.br',null,null,'127.0.0.1');
 
 /*else
 		 		insert into tb_Auth (Login, Password, Email) values (p_login, p_password, p_email);
 		 		select "E-Mail Cadastrado com Sucesso!" mensagem;*/
 
-
-/* fun√ß√£o que verifica se j√° existe o email*/
-
-delimiter //
-create function fn_email(
-	p_email varchar(100)
-)
-returns varchar(100)
-
-begin
-	declare final int default 0;
-	declare v_result int;
-	declare v_email varchar(100);
-	
-
-	declare cursor_acesso cursor for 
-		select Email from tb_Auth where Email = p_email;
-			
-		declare continue handler for not found set final = 1;
-				
-	 	open cursor_acesso;
-	 		fetch cursor_acesso into v_email;
-	 		if not final then 
-	 		 	set v_result = 1; -- 'E-Mail J√° Existe!';
-	 		else
-	 			set v_result = 0; -- 'E-Mail N√£o Existe!';
-	 		end if;
-	 
-	 	close cursor_acesso;
-	return (v_result);
-end;
-
-end//
-
-select fn_email('zzz@gmail.com') as result;
 
 
 
