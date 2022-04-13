@@ -49,7 +49,7 @@ create table if not exists tb_Url(
 
 -- fazer a checagem da url cadastrada
 drop table tb_Url 
-select * from tb_Url
+
 insert into tb_Url (IdAuth, Url, IpTerminal) 
 values (2, 'http://www.google.com.br', '127.0.0.1');
 
@@ -101,14 +101,14 @@ where a.Login = 'hx'
 
 -- (Correto)
 -- retornando o último registro relacionado ao usuário
-select a.IdAuth, u.Url, m.StatusCode, m.Body, max(m.DtHrMonitoring) as DtHrMonitoring  from tb_Auth a 
+select a.IdAuth, u.IdUrl, u.Url, m.StatusCode, m.Body, max(m.DtHrMonitoring) as DtHrMonitoring  from tb_Auth a 
 join tb_Url u on u.IdAuth = a.IdAuth 
 left join tb_LogMonitoring m on m.IdUrl = u.IdUrl and m.IdAuth = a.IdAuth 
 where 
 ((1 = 0) and (a.IdAuth = 1))
 or 
 ((0 = 0))
-group by a.IdAuth, u.Url, m.StatusCode
+group by a.IdAuth, u.IdUrl, u.Url, m.StatusCode
 
 
 
@@ -209,25 +209,26 @@ create procedure if not exists sp_monitoring(
 )
 begin
 	/* p_opcao = 1 (lista apenas urls do id)
-	 * p_opcao = 0 (lista todas as urls)]
+	 * p_opcao = 0 (lista todas as urls)
 	 * 
-	 * 0 = lista urls em monitoramento por usuários
-	 * 1 = insere o status code e body de cada requisição
+	 * p_operacao = 0 (lista urls em monitoramento por usuários)
+	 * p_operacao = 1 (insere o status code e body de cada requisição)
 	 * */
 	case p_operacao
 		when 0 then
-			select a.IdAuth, u.Url, m.StatusCode, m.Body, max(m.DtHrMonitoring) as DtHrMonitoring  from tb_Auth a 
+			select a.IdAuth, u.IdUrl, u.Url, m.StatusCode, m.Body, max(m.DtHrMonitoring) as DtHrMonitoring  from tb_Auth a 
 			join tb_Url u on u.IdAuth = a.IdAuth 
 			left join tb_LogMonitoring m on m.IdUrl = u.IdUrl and m.IdAuth = a.IdAuth 
 			where 
 			((1 = p_opcao) and (a.IdAuth = p_idauth))
-				or 
+			or 
 			((0 = p_opcao))
-			group by a.IdAuth, u.Url, m.StatusCode;
-
+			group by a.IdAuth, u.IdUrl, u.Url, m.StatusCode;
+	
 		when 1 then
 			insert into tb_LogMonitoring (idUrl, IdAuth, StatusCode, Body, IpTerminal) 
 		 	values (p_idurl, p_idauth, p_statuscode, p_body, p_ipterminal);
+		 	select 1 valor;
 	end case;
 end;
 
