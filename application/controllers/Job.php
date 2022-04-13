@@ -46,7 +46,7 @@ class Job extends CI_Controller {
                 'p_ipterminal'  => $_SERVER['REMOTE_ADDR']
             );
             
-            $insert_url = $this->job->sp_up($params_insert_all_url);
+            $insert_url = $this->job->sp_monitoring($params_insert_all_url);
         
         }
 
