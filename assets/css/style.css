@@ -67,29 +67,31 @@ html, body{
 }
 .status{
     position: absolute;
-    top:5px;
-    right:10px;
+    bottom:5px;
+    right:5px;
 }
 .status .s-200{
     color:#3ed100;
     font-weight: bold;
-    font-size:1rem;
+    font-size:0.8rem;
 }
 .status .s-300{
     color:#d10000;
     font-weight: bold;
-    font-size:1rem;
+    font-size:0.8rem;
 }
-@keyframes blink {
+/*@keyframes blink {
     50% {
       opacity: 0.0;
     }
   }
 .blink {
     animation: blink 1s step-start 0s infinite;
-}
+}*/
 .section-flex{
     display: flex;
+    flex-direction: row;
+    flex-flow: row wrap;
     align-items: center;
     justify-items: center;
     justify-content: flex-start;

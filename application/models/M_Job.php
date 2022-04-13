@@ -16,12 +16,13 @@ class M_Job extends CI_Model {
             array('value' => $p['p_opcao']),
             array('value' => $p['p_idauth']),
             array('value' => $p['p_idurl']),
+            array('value' => $p['p_url']),
             array('value' => $p['p_statuscode']),
             array('value' => $p['p_body']),
             array('value' => $p['p_ipterminal'])
         );
         
-        $query  = $this->db->query("call sp_monitoring(?,?,?,?,?,?,?)",$params);
+        $query  = $this->db->query("call sp_monitoring(?,?,?,?,?,?,?,?)",$params);
     
         $data = $query->result_array();
         $query->free_result();

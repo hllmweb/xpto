@@ -19,18 +19,7 @@ create table  if not exists tb_Auth(
 
 drop table tb_Auth
 select * from tb_Auth 
-insert into tb_Auth (Login, Password, Email) values ('hllm',md5('123'),'yyy@gmail.com');
-
-drop table tb_LogAuth 
-create table if not exists tb_LogAuth(
-	IdLogAuth bigint not null auto_increment,
-	IdAuth bigint not null,
-	Login varchar(50) not null,
-	DtHrRegister datetime not null default now(),
-	primary key(IdLogAuth),
-	constraint fk_auth_log
-	foreign key(IdAuth) references tb_Auth(IdAuth)
-);
+insert into tb_Auth (Login, Password, Email) values ('hllm',md5('123'),'xxx@gmail.com');
 
 
 /*
@@ -39,6 +28,7 @@ create table if not exists tb_LogAuth(
 create table if not exists tb_Url(
 	IdUrl bigint not null auto_increment,
 	IdAuth bigint not null,
+	StatusCode smallint null,
 	Url varchar(250) not null,
 	IpTerminal varchar(25) not null,
 	DtHrRegister datetime not null default now(),
@@ -51,10 +41,13 @@ create table if not exists tb_Url(
 drop table tb_Url 
 
 insert into tb_Url (IdAuth, Url, IpTerminal) 
-values (2, 'http://www.google.com.br', '127.0.0.1');
+values (2, 'https://www.globo.com', '127.0.0.1');
+select * from tb_Url
+select * from tb_logmonitoring tl 
 
+delete from tb_url where IdUrl = 3
 
-drop table tb_Monitoring 
+drop table tb_LogMonitoring 
 create table if not exists tb_LogMonitoring(
 	IdMonitoring bigint not null auto_increment,
 	IdUrl bigint not null,
@@ -65,12 +58,29 @@ create table if not exists tb_LogMonitoring(
 	DtHrMonitoring datetime not null default now(),
 	primary key(IdMonitoring),
 	constraint fk_url
-	foreign key(IdUrl) references tb_Url(IdUrl),
+	foreign key(IdUrl) references tb_Url(IdUrl) on delete cascade on update cascade,
 	constraint fk_auth_monitoring
-	foreign key(IdAuth) references tb_Auth(IdAuth)
+	foreign key(IdAuth) references tb_Auth(IdAuth) on delete cascade on update cascade
 );
 
-select * from tb_LogMonitoring
+select * from tb_url tu  
+select * from tb_LogMonitoring 
+
+
+/*importante para atualizar o status*/
+drop trigger tg_after_insert
+create or replace trigger tg_after_insert 
+after insert on tb_LogMonitoring
+for each row 
+begin
+	
+	update tb_Url set StatusCode = new.StatusCode
+	where IdUrl = new.IdUrl and IdAuth = new.IdAuth;
+ 
+end;
+
+
+
 
 drop trigger tg_alter_insert
 create or replace trigger tg_after_insert
@@ -92,6 +102,8 @@ begin
 	end if; 
 end;
 
+
+
 -- retornando o último registro relacionado ao usuário
 select u.Url, m.StatusCode, max(m.DtHrMonitoring) as DtHrMonitoring from tb_Url u 
 join tb_LogMonitoring m on m.IdUrl = u.IdUrl and m.IdAuth = u.IdAuth
@@ -102,15 +114,15 @@ where a.Login = 'hx'
 -- (Correto)
 -- retornando o último registro relacionado ao usuário
 select a.IdAuth, u.IdUrl, u.Url, m.Body, m.StatusCode,
-/*(select lm.StatusCode from tb_LogMonitoring lm 
-where lm.IdUrl = u.IdUrl and lm.IdAuth = a.IdAuth order by lm.DtHrMonitoring desc limit 1) as StatusCode, */
+(select lm.StatusCode from tb_LogMonitoring lm 
+where lm.IdUrl = u.IdUrl and lm.IdAuth = a.IdAuth order by lm.DtHrMonitoring desc limit 1) as StatusCode, 
 max(m.DtHrMonitoring) as DtHrMonitoring  from tb_Auth a 
 join tb_Url u on u.IdAuth = a.IdAuth 
 left join tb_LogMonitoring m on m.IdUrl = u.IdUrl and m.IdAuth = a.IdAuth 
 where 
-((1 =0) and (a.IdAuth = 1))
+((1 =1) and (a.IdAuth = 2))
 or 
-((0 = 0))
+((0 = 1))
 group by a.IdAuth, u.IdUrl, u.Url
 
 
@@ -199,7 +211,7 @@ end//
 call sp_auth(0,'teste', '1112', 'jack@gmail.com') 
 
 
-
+drop procedure sp_monitoring
 
 /* realizar o insert do monitoramento*/
 create procedure if not exists sp_monitoring(
@@ -207,6 +219,7 @@ create procedure if not exists sp_monitoring(
 	p_opcao int,
 	p_idauth bigint,
 	p_idurl bigint,
+	p_url varchar(250),
 	p_statuscode smallint, 
 	p_body longtext,
 	p_ipterminal varchar(25)
@@ -217,10 +230,11 @@ begin
 	 * 
 	 * p_operacao = 0 (lista urls em monitoramento por usuários)
 	 * p_operacao = 1 (insere o status code e body de cada requisição)
+	 * p_operacao = 2 (delete urls e o log de monitoramento)
 	 * */
 	case p_operacao
 		when 0 then
-			select a.IdAuth, u.IdUrl, u.Url, m.StatusCode,
+			select a.IdAuth, u.IdUrl, u.Url, u.StatusCode,
 			m.Body, max(m.DtHrMonitoring) as DtHrMonitoring  from tb_Auth a 
 			join tb_Url u on u.IdAuth = a.IdAuth 
 			left join tb_LogMonitoring m on m.IdUrl = u.IdUrl and m.IdAuth = a.IdAuth 
@@ -228,20 +242,33 @@ begin
 			((1 = p_opcao) and (a.IdAuth = p_idauth))
 			or 
 			((0 = p_opcao))
-			group by a.IdAuth, u.IdUrl, u.Url;
+			group by a.IdAuth, u.StatusCode, u.IdUrl, u.Url;
 	
 		when 1 then
 			insert into tb_LogMonitoring (idUrl, IdAuth, StatusCode, Body, IpTerminal) 
 		 	values (p_idurl, p_idauth, p_statuscode, p_body, p_ipterminal);
 		 	select 1 valor;
+		when 2 then
+		 	delete from tb_Url where IdAuth = p_idauth and IdUrl = p_idurl; 
+		 	select 1 valor;
+		when 3 then 
+			insert into tb_Url (IdAuth, Url, IpTerminal) 
+			values (p_idauth, p_url, p_ipterminal);
+			select 1 valor;
 	end case;
 end;
 
 
+
+
+select * from tb_Url where IdUrl = 7
+
 select * from tb_LogMonitoring
-call sp_monitoring(0,1,1,null,null,null,null);
+call sp_monitoring(0,1,2,null,null,null,null);
 call sp_monitoring(0,0,null,null,null,null,null);
 call sp_monitoring(1,null,1,1,200,'dashudashu','127.0.0.1');
+call sp_monitoring(2,null,7,null,null,null,null);
+call sp_monitoring(3,null,2,null,'http://www.google.com',null,null,'127.0.0.1');
 
 /*else
 		 		insert into tb_Auth (Login, Password, Email) values (p_login, p_password, p_email);
