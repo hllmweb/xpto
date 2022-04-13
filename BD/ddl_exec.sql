@@ -101,17 +101,21 @@ where a.Login = 'hx'
 
 -- (Correto)
 -- retornando o último registro relacionado ao usuário
-select a.IdAuth, u.IdUrl, u.Url, m.StatusCode, m.Body, max(m.DtHrMonitoring) as DtHrMonitoring  from tb_Auth a 
+select a.IdAuth, u.IdUrl, u.Url, m.Body, m.StatusCode,
+/*(select lm.StatusCode from tb_LogMonitoring lm 
+where lm.IdUrl = u.IdUrl and lm.IdAuth = a.IdAuth order by lm.DtHrMonitoring desc limit 1) as StatusCode, */
+max(m.DtHrMonitoring) as DtHrMonitoring  from tb_Auth a 
 join tb_Url u on u.IdAuth = a.IdAuth 
 left join tb_LogMonitoring m on m.IdUrl = u.IdUrl and m.IdAuth = a.IdAuth 
 where 
-((1 = 0) and (a.IdAuth = 1))
+((1 =0) and (a.IdAuth = 1))
 or 
 ((0 = 0))
-group by a.IdAuth, u.IdUrl, u.Url, m.StatusCode
+group by a.IdAuth, u.IdUrl, u.Url
 
 
-
+select lm.StatusCode from tb_LogMonitoring lm 
+where lm.IdUrl = 1 and lm.IdAuth = 1 order by lm.DtHrMonitoring desc limit 1 
 
 DATE_FORMAT(SYSDATE(), '%Y-%m-01')
 drop table tb_LogMonitoring
@@ -216,14 +220,15 @@ begin
 	 * */
 	case p_operacao
 		when 0 then
-			select a.IdAuth, u.IdUrl, u.Url, m.StatusCode, m.Body, max(m.DtHrMonitoring) as DtHrMonitoring  from tb_Auth a 
+			select a.IdAuth, u.IdUrl, u.Url, m.StatusCode,
+			m.Body, max(m.DtHrMonitoring) as DtHrMonitoring  from tb_Auth a 
 			join tb_Url u on u.IdAuth = a.IdAuth 
 			left join tb_LogMonitoring m on m.IdUrl = u.IdUrl and m.IdAuth = a.IdAuth 
 			where 
 			((1 = p_opcao) and (a.IdAuth = p_idauth))
 			or 
 			((0 = p_opcao))
-			group by a.IdAuth, u.IdUrl, u.Url, m.StatusCode;
+			group by a.IdAuth, u.IdUrl, u.Url;
 	
 		when 1 then
 			insert into tb_LogMonitoring (idUrl, IdAuth, StatusCode, Body, IpTerminal) 
