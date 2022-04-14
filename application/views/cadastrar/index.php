@@ -11,7 +11,7 @@
 <body>
     <div class="row">
         <div class="login-container">
-            <form method="POST" action="#">
+            <form method="POST" action="<?= base_url('cadastrar/insert/') ?>">
                 <div class="input-field">
                     <input type="text" name="login" id="login" autocomplete="off" pattern=".+" required="" />
                     <label for="login">Login</label>
@@ -27,7 +27,7 @@
                    <label for="senha">Senha</label>
                 </div>
 
-                <button>
+                <button type="submit">
                     <span>Cadastrar</span>
                     <i class="fa-solid fa-plus"></i>
                 </button>

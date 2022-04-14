@@ -28,8 +28,12 @@
                     </div>
 
                     <div class="item">
-                        <span>Login da Pessoa</span>
-                        <a href="" class="logoff">Sair <i class="fa-solid fa-circle-xmark"></i></a>
+                        <span>
+                        <?= $login_name; ?>
+                        </span>
+                        <a href="<?= base_url('dashboard/logout'); ?>" class="logoff">
+                            Sair <i class="fa-solid fa-circle-xmark"></i>
+                        </a>
                     </div>
                 
 

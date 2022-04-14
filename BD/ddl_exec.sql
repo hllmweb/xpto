@@ -1,10 +1,9 @@
-create database xpto;
+-- create database xpto;
 use xpto;
-
-drop table tb_Auth
-
+ 
+DELIMITER $$
 /*
- * Usu·rios autenticados
+ * Usu√°rios autenticados
  * */
 create table  if not exists tb_Auth(
 	IdAuth bigint not null auto_increment,
@@ -15,11 +14,6 @@ create table  if not exists tb_Auth(
 	constraint email unique(Email),
 	primary key(IdAuth)
 );
-
-select * from tb_Auth 
-insert into tb_Auth (Login, Password, Email) values 
-('xxx',md5('123'),'xxx@gmail.com'),
-('yyy',md5('123'),'yyy@gmail.com');
 
 
 /*
@@ -37,10 +31,9 @@ create table if not exists tb_Url(
 	foreign key(IdAuth) references tb_Auth(IdAuth)
 );
 
-
-insert into tb_Url (IdAuth, Url, IpTerminal) 
-values (2, 'https://www.globo.com', '127.0.0.1');
-
+/*
+ * cadastra o monitoramento e retorno das informa√ß√µes
+ * */
 create table if not exists tb_LogMonitoring(
 	IdMonitoring bigint not null auto_increment,
 	IdUrl bigint not null,
@@ -56,9 +49,11 @@ create table if not exists tb_LogMonitoring(
 	foreign key(IdAuth) references tb_Auth(IdAuth) on delete cascade on update cascade
 );
 
+DELIMITER ;
+
 
 /*importante para atualizar o status*/
-drop trigger tg_after_insert
+
 create or replace trigger tg_after_insert 
 after insert on tb_LogMonitoring
 for each row 
@@ -67,11 +62,9 @@ begin
 	where IdUrl = new.IdUrl and IdAuth = new.IdAuth;
 end;
 
-call sp_auth(1, 'yyy','23',null)
-drop procedure sp_auth 
 
-delimiter //
-/*Stored Procedure*/
+
+/*Stored Procedure de Auth e Insert*/
 create procedure  if not exists sp_auth(
 	p_operacao int,
 	p_login varchar(50),
@@ -81,26 +74,23 @@ create procedure  if not exists sp_auth(
 begin
 	/*	
 	 * 
-	 * p_operacao = 0 (verifica se existe email, caso n„o exista, efetua o cadastro)
-	 * p_operacao = 1 (verifica se existe usu·rio)
-	 * p_operacao = 2 (inserir usu·rios)
+	 * p_operacao = 0 (verifica se existe email, caso n√£o exista, efetua o cadastro)
+	 * p_operacao = 1 (verifica se existe usu√°rio)
+	 * p_operacao = 2 (inserir usu√°rios)
 	 * */
 	
 	 case p_operacao
 		 when 0 then
 			if (select fn_email(p_email)) = 1 then 
-				select 1 valor;  -- "E-Mail J· Cadastrado!"
+				select 1 valor;  -- "E-Mail J√° Cadastrado!"
 			else
-		 		select 0 valor;  -- "E-Mail N„o Cadastrado!" 
+		 		select 0 valor;  -- "E-Mail N√£o Cadastrado!" 
 		 	end if;
 		when 1 then
 		
-			if not exists (select 1 from tb_Auth a where a.Login = p_login and a.Password  = md5(p_password)) then 
-				select 0 valor; -- "Usu·rio ou Senha invalido!"
-			else 
 				select a.IdAuth, a.Login, a.Password, a.Email, a.DtHrRegister 
 				from tb_Auth a where a.Login = p_login and a.Password  = md5(p_password);
-			end if;
+		
 			
 		when 2 then 
 				insert into tb_Auth (Login, Password, Email) values (p_login, md5(p_password), p_email);
@@ -125,8 +115,8 @@ begin
 	 * p_opcao = 0 (lista todas as urls)
 	 * 
 	 * 
-	 * p_operacao = 0 (lista urls em monitoramento por usu·rios)
-	 * p_operacao = 1 (insere o status code e body de cada requisiÁıes)
+	 * p_operacao = 0 (lista urls em monitoramento por usu√°rios)
+	 * p_operacao = 1 (insere o status code e body de cada requisi√ß√µes)
 	 * p_operacao = 2 (delete url e o log de monitoramento)
 	 * p_operacao = 3 (insere url)
 	 * */
@@ -156,14 +146,8 @@ begin
 	end case;
 end;
 
-end//
 
-
-
-
-/* funÁ„o que verifica se j· existe o email*/
-
-delimiter //
+/* fun√ß√£o que verifica se j√° existe o email*/
 create function fn_email(
 	p_email varchar(100)
 )
@@ -192,153 +176,21 @@ begin
 	return (v_result);
 end;
 
-end//
+DELIMITER ;
 
-select fn_email('zzz@gmail.com') as result;
 
+/*
+ * Dados ficticio
+ * */
+insert into tb_Auth (Login, Password, Email) values 
+('xxx',md5('123'),'xxx@gmail.com'),
+('yyy',md5('123'),'yyy@gmail.com');
 
 
 
+insert into tb_Url (IdAuth, Url, IpTerminal) values 
+(1, 'https://www.globo.com', '127.0.0.1'),
+(1, 'https://www.google.com','127.0.0.1'),
+(2, 'https://www.hugomesquita.com.br','127.0.0.1');
 
 
-
-
-
-
-
-
-
-drop trigger tg_alter_insert
-create or replace trigger tg_after_insert
-after insert on tb_Url
-for each row 
-begin
-	insert into tb_LogMonitoring (IdUrl, IdAuth, StatusCode, IpTerminal) values (new.IdUrl, new.IdAuth, new.StatusCode, new.IpTerminal);
-end;
-
-
-drop trigger tg_after_update
-create or replace trigger tg_after_insert 
-after update on tb_Url
-for each row 
-begin
-	if new.StatusCode <> old.StatusCode then
-		update tb_Url set StatusCode = new.StatusCode, Body = new.Body
-		where IdUrl = old.IdUrl;
-	end if; 
-end;
-
-
-
--- retornando o √∫ltimo registro relacionado ao usu√°rio
-select u.Url, m.StatusCode, max(m.DtHrMonitoring) as DtHrMonitoring from tb_Url u 
-join tb_LogMonitoring m on m.IdUrl = u.IdUrl and m.IdAuth = u.IdAuth
-join tb_Auth a on a.IdAuth = m.IdAuth
-where a.Login = 'hx'
-
-
--- (Correto)
--- retornando o √∫ltimo registro relacionado ao usu√°rio
-select a.IdAuth, u.IdUrl, u.Url, m.Body, m.StatusCode,
-(select lm.StatusCode from tb_LogMonitoring lm 
-where lm.IdUrl = u.IdUrl and lm.IdAuth = a.IdAuth order by lm.DtHrMonitoring desc limit 1) as StatusCode, 
-max(m.DtHrMonitoring) as DtHrMonitoring  from tb_Auth a 
-join tb_Url u on u.IdAuth = a.IdAuth 
-left join tb_LogMonitoring m on m.IdUrl = u.IdUrl and m.IdAuth = a.IdAuth 
-where 
-((1 =1) and (a.IdAuth = 2))
-or 
-((0 = 1))
-group by a.IdAuth, u.IdUrl, u.Url
-
-
-select lm.StatusCode from tb_LogMonitoring lm 
-where lm.IdUrl = 1 and lm.IdAuth = 1 order by lm.DtHrMonitoring desc limit 1 
-
-DATE_FORMAT(SYSDATE(), '%Y-%m-01')
-drop table tb_LogMonitoring
-select * from tb_LogMonitoring
-insert into tb_LogMonitoring (IdUrl, IdAuth, StatusCode, Body, IpTerminal) values (1,1,'200','sadahsudhasudhasudhaushdaus','127.0.0.1');
-
-insert into tb_LogMonitoring (IdUrl, IdAuth, StatusCode, Body, IpTerminal) values (3,4,'200','sadahsudhasudhasudhaushdaus','127.0.0.1');
-
-
-create or replace trigger tg_url_update
-after update on tb_Url
-for each row 
-begin
-	if new.StatusCode <> old.StatusCode then 
-		insert into tb_Monitoring () values ();
-	end if;
-end;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-use xpto;
-drop procedure sp_auth
-drop procedure sp_monitoring 
-drop function fn_email
-
-
-call sp_auth(0,'teste', '1112', 'jack@gmail.com') 
-
-
-drop procedure sp_monitoring
-
-
-
-
-
-
-select * from tb_Url where IdUrl = 7
-
-select * from tb_LogMonitoring
-call sp_monitoring(0,1,2,null,null,null,null);
-call sp_monitoring(0,0,null,null,null,null,null);
-call sp_monitoring(1,null,1,1,200,'dashudashu','127.0.0.1');
-call sp_monitoring(2,null,7,null,null,null,null);
-call sp_monitoring(3,null,2,null,'http://www.techmonteiro.com.br',null,null,'127.0.0.1');
-
-/*else
-		 		insert into tb_Auth (Login, Password, Email) values (p_login, p_password, p_email);
-		 		select "E-Mail Cadastrado com Sucesso!" mensagem;*/
-
-
-
-
-
-
-
-
-
-
-
-			-- if exists (select var_email) then 
-			-- 	select "E-Mail J√° Cadastrado!" mensagem;
-			-- else 
-				-- insert into tb_Auth (Login, Password, Email) values (p_login, p_password, p_email);
-				-- select "E-Mail Cadastrado com Sucesso!" mensagem;
-			-- end if;

@@ -19,12 +19,10 @@ class M_Auth extends CI_Model {
         );
 
         $query = $this->db->query("call sp_auth(?,?,?,?)",$params);
-        $data = $query->result_array();
+        $data = $query->row_array();
         $query->free_result();
         return $data;
     }
-
-
 
     public function isEmail($p){
         $params = array(
@@ -40,15 +38,6 @@ class M_Auth extends CI_Model {
 
     
 
-    public function check_permissao($p){
-        $params = array(
-            array('value' => $p['p_hash_acesso']),
-            array('value' => $p['p_controller'])
-        );
-
-        $query = $this->db->query("call sp_permissao(?,?)",$params);
-        return $query->result_array();
-    }
 
 }
 

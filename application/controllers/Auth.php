@@ -25,10 +25,14 @@ class Auth extends CI_Controller {
             'p_email'       => null
         );
 
-        $islogin = $this->auth->sp_auth($params);
-
-        print_r($islogin);
+        $data_login = $this->auth->sp_auth($params);
         
+        if(empty($data_login)){
+            header('location:'.base_url('login/index'));
+        }else{
+            $this->session->set_userdata('user_auth', $data_login);
+			redirect('dashboard');
+        }
         
 
 	}

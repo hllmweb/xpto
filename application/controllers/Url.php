@@ -15,7 +15,7 @@ class Url extends CI_Controller {
 
 
 	public function index(){
-		$idauth = 1;
+		$idauth = $this->session->userdata('user_auth')['IdAuth'];
 	
         $params_list_all_url = array(
             'p_operacao'    => 0,
@@ -40,7 +40,7 @@ class Url extends CI_Controller {
 
 
     public function list(){
-        $idauth = 2;
+        $idauth = $this->session->userdata('user_auth')['IdAuth'];
     
         $params_list_all_url = array(
             'p_operacao'    => 0,
@@ -64,7 +64,7 @@ class Url extends CI_Controller {
 
 
     public function insert(){
-        $idauth = 2;
+        $idauth = $this->session->userdata('user_auth')['IdAuth'];
         $url    = $this->input->post('url');
 
         $params_insert_url = array(
@@ -89,7 +89,7 @@ class Url extends CI_Controller {
 
 
 	public function delete($idurl){
-		$idauth = 2;
+		$idauth = $this->session->userdata('user_auth')['IdAuth'];
 
 
         $params_del_url = array(

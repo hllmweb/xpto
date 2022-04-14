@@ -15,13 +15,27 @@ class Dashboard extends CI_Controller {
 
 
 	public function index(){    
-      
+        
 		$data = array(
-			'titulo' 	=> 'XPTO - Dashboard'
+			'titulo' 	    => 'XPTO - Dashboard',
+            'login_name'    => $this->session->userdata('user_auth')['Login']
 		);
-		
-		$this->load->view('dashboard/index',$data);
+        
+
+        if($this->session->userdata('user_auth')){
+            $this->load->view('dashboard/index', $data);
+        }else{
+            redirect('/login');
+        }
+  
+
+    
 	}
+
+    public function logout(){
+		$this->session->unset_userdata('user_auth');
+		redirect('/login');
+    }
 
 
 }
