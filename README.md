@@ -1,11 +1,16 @@
 
 <h1 align="center">Agendador de URL
 
-<h3 align="center">Tela de Login</h3>
+<h3 align="left">Tela de Login</h3>
 <p align="center">
   <img alt="Print do layout da aplicação" width="100%" src="./.github/login.png" />
 </p>
-
+<h3 align="left">Painel</h3>
+<p align="center">
+  <img alt="Print do layout da aplicação" width="100%" src="./.github/tela-1.png" />
+</p>
+	
+	
 ## 💻 Projeto
 
 A Empresa XPTO faz o rastreamento de status de websites. Seus clientes podem acessar a esta aplicação web para cadastrar as URLs que desejam rastrear.
