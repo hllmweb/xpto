@@ -5,7 +5,7 @@
 <p align="center">
   <img alt="Print do layout da aplicação" width="100%" src="./.github/login.png" />
 </p>
-<h3 align="left">Painel</h3>
+<h3 align="left">Painel ao Cadastrar uma URL Valida</h3>
 <p align="center">
   <img alt="Print do layout da aplicação" width="100%" src="./.github/tela-1.png" />
 </p>
@@ -14,6 +14,11 @@
 <p align="center">
   <img alt="Print do layout da aplicação" width="100%" src="./.github/cron.png" />
 </p>
+	
+<h3 align="left">Painel Pós Cron</h3>
+<p align="center">
+  <img alt="Print do layout da aplicação" width="100%" src="./.github/tela-2.png" />
+</p>	
 	
 ## 💻 Projeto
 
