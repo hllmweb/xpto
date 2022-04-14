@@ -9,7 +9,11 @@
 <p align="center">
   <img alt="Print do layout da aplicação" width="100%" src="./.github/tela-1.png" />
 </p>
-	
+
+<h3 align="left">Cron</h3>
+<p align="center">
+  <img alt="Print do layout da aplicação" width="100%" src="./.github/cron.png" />
+</p>
 	
 ## 💻 Projeto
 
