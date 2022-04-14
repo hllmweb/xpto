@@ -30,13 +30,15 @@ O robô irá armazenar o código de status HTTP e o corpo da resposta, de forma 
 
 ## :rocket: Tecnologias
 - [PHP]
-- [Codeigniter]
-- [jQuery]
-- [MySQL]
+- [Codeigniter] - php
+- [MySQL]  - procedures, funções e triggers
+- [jQuery] - javascript
+- [CSS]
+- [HTML]
 
 
 ## 📥 Instalação e execução
 
-Execute crie o banco com o nome xpto e tabelas, procedures, funções e triggers
-Instruções do extract ddl sql pode ser visualizado na pasta BD/
+Crie o banco com o nome xpto e tabelas, procedures, funções e triggers.
+Instruções do extract ddl sql com as informações citadas, podem ser visualizadas e executadas na pasta BD/
 Link: [https://github.com/hllmweb/xpto/blob/main/BD/ddl_exec.sql]
