@@ -1,5 +1,5 @@
 
-<h1 align="center">Agendador de URL que verifica a cada 1 minuto as URLS'S cadastradas</h1>
+<h1 align="center">Agendador de URL
 
 <h3 align="center">Tela de Login</h3>
 <p align="center">
